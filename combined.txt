@@ -1,0 +1,1160 @@
+
+// ----- scripts/seed-db.ts -----
+
+import { DataSource } from 'typeorm';
+import { Nacionalidad } from '../src/persona/relaciones/nacionalidad/entities/nacionalidad.entity';
+import { Afp } from '../src/persona/relaciones/afp/entities/afp.entity';
+import { Salud } from '../src/persona/relaciones/salud/entities/salud.entity'; // Importar la entidad Salud
+import { Region } from '../src/persona/relaciones/region/entities/region.entity';
+import { Ciudad } from '../src/persona/relaciones/ciudad/entities/Ciudad.entity';
+import { ConfigService } from '@nestjs/config';
+import { config } from 'dotenv';
+import * as path from 'path';
+
+config();
+
+const configService = new ConfigService();
+
+const AppDataSource = new DataSource({
+  type: 'postgres',
+  host: configService.get('DATABASE_HOST'),
+  port: parseInt(configService.get('DATABASE_PORT')),
+  username: configService.get('DATABASE_USER'),
+  password: configService.get('DATABASE_PASSWORD'),
+  database: configService.get('DATABASE_NAME'),
+  entities: [
+    path.join(__dirname, '..', 'src', '**', '*.entity.{ts,js}'),
+    Ciudad,
+    Region,
+  ],
+  synchronize: false,
+});
+
+async function seed() {
+  try {
+    await AppDataSource.initialize();
+    const nacionalidadRepository = AppDataSource.getRepository(Nacionalidad);
+    const afpRepository = AppDataSource.getRepository(Afp);
+    const saludRepository = AppDataSource.getRepository(Salud); // Repositorio de Salud
+    const regionRepository = AppDataSource.getRepository(Region); // Repositorio de Region
+    const ciudadRepository = AppDataSource.getRepository(Ciudad); // Repositorio de Ciudad
+
+    // Seed Nacionalidades
+    const nacionalidades = [
+      { pais: 'Chile', nacionalidadPais: 'Chilena' },
+      { pais: 'Argentina', nacionalidadPais: 'Argentina' },
+      { pais: 'Perú', nacionalidadPais: 'Peruana' },
+    ];
+
+    for (const nac of nacionalidades) {
+      const nacionalidad = nacionalidadRepository.create(nac);
+      await nacionalidadRepository.save(nacionalidad);
+    }
+
+    console.log('Nacionalidades seeded successfully');
+
+    // Seed AFPs
+    const afps = [
+      { sistemaAfp: 'AFP Modelo', porcentaje: 10.58 },
+      { sistemaAfp: 'AFP Cuprum', porcentaje: 10.48 },
+      { sistemaAfp: 'AFP Habitat', porcentaje: 11.27 },
+      { sistemaAfp: 'AFP PlanVital', porcentaje: 10.41 },
+      { sistemaAfp: 'AFP ProVida', porcentaje: 11.45 },
+      { sistemaAfp: 'AFP Capital', porcentaje: 11.44 },
+      { sistemaAfp: 'AFP Uno', porcentaje: 10.69 },
+    ];
+
+    for (const afpData of afps) {
+      const afp = afpRepository.create(afpData);
+      await afpRepository.save(afp);
+    }
+
+    console.log('AFPs seeded successfully');
+
+    // Seed Salud (Agregar datos a la tabla Salud)
+    const saludes = [
+      { previsionSalud: 'FONASA', porcentaje: 7.0 },
+      { previsionSalud: 'ISAPRE Colmena', porcentaje: 8.0 },
+      { previsionSalud: 'ISAPRE Cruz Blanca', porcentaje: 7.5 },
+      { previsionSalud: 'ISAPRE Consalud', porcentaje: 7.6 },
+    ];
+
+    for (const saludData of saludes) {
+      const salud = saludRepository.create(saludData);
+      await saludRepository.save(salud);
+    }
+
+    console.log('Saludes seeded successfully');
+
+    // Seed Regiones
+    const regiones = [
+      { nombre: 'Región de Arica y Parinacota' },
+      { nombre: 'Región de Tarapacá' },
+      { nombre: 'Región de Antofagasta' },
+      { nombre: 'Región de Atacama' },
+      { nombre: 'Región de Coquimbo' },
+      { nombre: 'Región de Valparaíso' },
+      { nombre: 'Región Metropolitana de Santiago' },
+      { nombre: 'Región del Libertador General Bernardo O’Higgins' },
+      { nombre: 'Región del Maule' },
+      { nombre: 'Región de Ñuble' },
+      { nombre: 'Región del Biobío' },
+      { nombre: 'Región de La Araucanía' },
+      { nombre: 'Región de Los Ríos' },
+      { nombre: 'Región de Los Lagos' },
+      { nombre: 'Región de Aysén del General Carlos Ibáñez del Campo' },
+      { nombre: 'Región de Magallanes y de la Antártica Chilena' },
+    ];
+
+    for (const reg of regiones) {
+      const region = regionRepository.create(reg);
+      await regionRepository.save(region);
+    }
+
+    console.log('Regiones seeded successfully');
+
+    // Seed Ciudades
+    const ciudades = [
+      { nombre: 'Arica', regionNombre: 'Región de Arica y Parinacota' },
+      { nombre: 'Iquique', regionNombre: 'Región de Tarapacá' },
+      { nombre: 'Antofagasta', regionNombre: 'Región de Antofagasta' },
+      { nombre: 'Copiapó', regionNombre: 'Región de Atacama' },
+      { nombre: 'La Serena', regionNombre: 'Región de Coquimbo' },
+      { nombre: 'Valparaíso', regionNombre: 'Región de Valparaíso' },
+      { nombre: 'Santiago', regionNombre: 'Región Metropolitana de Santiago' },
+      {
+        nombre: 'Rancagua',
+        regionNombre: 'Región del Libertador General Bernardo O’Higgins',
+      },
+      { nombre: 'Talca', regionNombre: 'Región del Maule' },
+      { nombre: 'Chillán', regionNombre: 'Región de Ñuble' },
+      { nombre: 'Concepción', regionNombre: 'Región del Biobío' },
+      { nombre: 'Temuco', regionNombre: 'Región de La Araucanía' },
+      { nombre: 'Valdivia', regionNombre: 'Región de Los Ríos' },
+      { nombre: 'Puerto Montt', regionNombre: 'Región de Los Lagos' },
+      {
+        nombre: 'Coyhaique',
+        regionNombre: 'Región de Aysén del General Carlos Ibáñez del Campo',
+      },
+      {
+        nombre: 'Punta Arenas',
+        regionNombre: 'Región de Magallanes y de la Antártica Chilena',
+      },
+    ];
+
+    for (const ciudadData of ciudades) {
+      const region = await regionRepository.findOne({
+        where: { nombre: ciudadData.regionNombre },
+      });
+      if (region) {
+        const ciudad = ciudadRepository.create({
+          nombre: ciudadData.nombre,
+          regionId: region.id,
+        });
+        await ciudadRepository.save(ciudad);
+      }
+    }
+
+    console.log('Ciudades seeded successfully');
+  } catch (error) {
+    console.error('Error seeding data:', error);
+  } finally {
+    await AppDataSource.destroy();
+  }
+}
+
+seed();
+
+
+// ----- src/database/database.module.ts -----
+
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+
+@Module({
+  imports: [
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get('DATABASE_HOST'),
+        port: +configService.get<number>('DATABASE_PORT'),
+        username: configService.get('DATABASE_USER'),
+        password: configService.get('DATABASE_PASSWORD'),
+        database: configService.get('DATABASE_NAME'),
+        entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+        synchronize: true, // Nota: Considera desactivar esto en producción
+        logging: true,
+      }),
+      inject: [ConfigService],
+    }),
+  ],
+})
+export class DatabaseModule {}
+
+
+// ----- src/persona/dto/create-persona.dto.ts -----
+
+import { Type } from 'class-transformer';
+import { IsNotEmpty, IsEmail, IsDate, IsString } from 'class-validator';
+import { Afp } from 'src/persona/relaciones/afp/entities/afp.entity';
+import { Nacionalidad } from 'src/persona/relaciones/nacionalidad/entities/nacionalidad.entity';
+import { ManyToOne } from 'typeorm';
+import { Salud } from '../relaciones/salud/entities/salud.entity';
+
+export class CreatePersonaDto {
+  @IsNotEmpty()
+  @IsString()
+  primerNombre: string;
+
+  @IsNotEmpty()
+  @IsString()
+  segundoNombre: string;
+
+  @IsNotEmpty()
+  @IsString()
+  apellidoPaterno: string;
+
+  @IsNotEmpty()
+  @IsString()
+  apellidoMaterno: string;
+
+  @IsNotEmpty()
+  @IsDate()
+  @Type(() => Date)
+  fechaNacimiento: Date;
+
+  @IsNotEmpty()
+  @IsString()
+  sexo: string;
+
+  @IsNotEmpty()
+  @IsEmail()
+  email: string;
+
+  @IsNotEmpty()
+  @IsString()
+  direccionId: string;
+
+  // @IsNotEmpty()
+  // @IsString()
+  // tipoSaludId: string;
+  @ManyToOne(() => Salud, (salud) => salud.personas)
+  salud: Salud;
+
+  @ManyToOne(() => Afp, (afp) => afp.personas)
+  afp: Afp;
+
+  @ManyToOne(() => Nacionalidad, (nacionalidad) => nacionalidad.personas)
+  nacionalidad: Nacionalidad;
+}
+
+
+// ----- src/persona/dto/update-persona.dto.ts -----
+
+import { PartialType } from '@nestjs/mapped-types';
+import { CreatePersonaDto } from './create-persona.dto';
+
+export class UpdatePersonaDto extends PartialType(CreatePersonaDto) {}
+
+
+// ----- src/persona/entities/persona.entity.ts -----
+
+import { Nacionalidad } from '../relaciones/nacionalidad/entities/nacionalidad.entity';
+import { Afp } from '../relaciones/afp/entities/afp.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToOne,
+  JoinColumn,
+} from 'typeorm';
+import { Salud } from '../relaciones/salud/entities/salud.entity';
+import { Direccion } from '../relaciones/direccion/entities/direccion.entity';
+
+@Entity()
+export class Persona {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  primerNombre: string;
+
+  @Column()
+  segundoNombre: string;
+
+  @Column()
+  apellidoPaterno: string;
+
+  @Column()
+  apellidoMaterno: string;
+
+  @Column({ type: 'date' })
+  fechaNacimiento: Date;
+
+  @Column()
+  sexo: string;
+
+  @Column()
+  email: string;
+
+  @OneToOne(() => Direccion)
+  @JoinColumn()
+  direccion: Direccion;
+
+  @ManyToOne(() => Salud, (salud) => salud.personas)
+  salud: Salud;
+
+  @ManyToOne(() => Afp, (afp) => afp.personas)
+  afp: Afp;
+
+  @ManyToOne(() => Nacionalidad, (nacionalidad) => nacionalidad.personas)
+  nacionalidad: Nacionalidad;
+}
+
+
+// ----- src/persona/persona.controller.ts -----
+
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
+import { PersonaService } from './persona.service';
+import { CreatePersonaDto } from './dto/create-persona.dto';
+import { UpdatePersonaDto } from './dto/update-persona.dto';
+
+@Controller('persona')
+export class PersonaController {
+  constructor(private readonly personaService: PersonaService) {}
+
+  @Post()
+  create(@Body() createPersonaDto: CreatePersonaDto) {
+    return this.personaService.create(createPersonaDto);
+  }
+
+  @Get()
+  findAll() {
+    return this.personaService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.personaService.findOne(+id);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updatePersonaDto: UpdatePersonaDto) {
+    return this.personaService.update(+id, updatePersonaDto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.personaService.remove(+id);
+  }
+}
+
+
+// ----- src/persona/persona.module.ts -----
+
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { PersonaService } from './persona.service';
+import { PersonaController } from './persona.controller';
+import { Persona } from './entities/persona.entity';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([Persona])],
+  controllers: [PersonaController],
+  providers: [PersonaService],
+})
+export class PersonaModule {}
+
+
+// ----- src/persona/persona.service.ts -----
+
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Persona } from './entities/persona.entity';
+import { CreatePersonaDto } from './dto/create-persona.dto';
+import { UpdatePersonaDto } from './dto/update-persona.dto';
+
+@Injectable()
+export class PersonaService {
+  constructor(
+    @InjectRepository(Persona)
+    private personaRepository: Repository<Persona>,
+  ) {}
+
+  async create(createPersonaDto: CreatePersonaDto): Promise<Persona> {
+    const persona = this.personaRepository.create(createPersonaDto);
+    return await this.personaRepository.save(persona);
+  }
+
+  async findAll(): Promise<Persona[]> {
+    return await this.personaRepository.find();
+  }
+
+  async findOne(id: number): Promise<Persona> {
+    const persona = await this.personaRepository.findOne({ where: { id } });
+    if (!persona) {
+      throw new NotFoundException(`Persona with ID ${id} not found`);
+    }
+    return persona;
+  }
+
+  async update(
+    id: number,
+    updatePersonaDto: UpdatePersonaDto,
+  ): Promise<Persona> {
+    const persona = await this.findOne(id);
+    Object.assign(persona, updatePersonaDto);
+    return await this.personaRepository.save(persona);
+  }
+
+  async remove(id: number): Promise<void> {
+    const persona = await this.findOne(id);
+    await this.personaRepository.remove(persona);
+  }
+}
+
+
+// ----- src/persona/relaciones/nacionalidad/dto/create-nacionalidad.dto.ts -----
+
+import { IsNotEmpty, IsString } from 'class-validator';
+
+export class CreateNacionalidadDto {
+  @IsNotEmpty()
+  @IsString()
+  pais: string;
+
+  @IsNotEmpty()
+  @IsString()
+  nacionalidadPais: string;
+}
+
+
+// ----- src/persona/relaciones/nacionalidad/entities/nacionalidad.entity.ts -----
+
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Persona } from '../../../entities/persona.entity';
+
+@Entity()
+export class Nacionalidad {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  pais: string;
+
+  @Column()
+  nacionalidadPais: string;
+
+  @OneToMany(() => Persona, (persona) => persona.nacionalidad)
+  personas: Persona[];
+}
+
+
+// ----- src/persona/relaciones/nacionalidad/nacionalidad.module.ts -----
+
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Nacionalidad } from './entities/nacionalidad.entity';
+import { NacionalidadService } from './nacionalidad.service';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([Nacionalidad])],
+  providers: [NacionalidadService],
+  exports: [NacionalidadService],
+})
+export class NacionalidadModule {}
+
+
+// ----- src/persona/relaciones/nacionalidad/nacionalidad.service.ts -----
+
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Nacionalidad } from './entities/nacionalidad.entity';
+import { CreateNacionalidadDto } from './dto/create-nacionalidad.dto';
+
+@Injectable()
+export class NacionalidadService {
+  constructor(
+    @InjectRepository(Nacionalidad)
+    private nacionalidadRepository: Repository<Nacionalidad>,
+  ) {}
+
+  async create(
+    createNacionalidadDto: CreateNacionalidadDto,
+  ): Promise<Nacionalidad> {
+    const nacionalidad = this.nacionalidadRepository.create(
+      createNacionalidadDto,
+    );
+    return await this.nacionalidadRepository.save(nacionalidad);
+  }
+
+  async findAll(): Promise<Nacionalidad[]> {
+    return await this.nacionalidadRepository.find();
+  }
+
+  // Otros métodos según sea necesario
+}
+
+
+// ----- src/persona/relaciones/afp/dto/create-afp.dto.ts -----
+
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+
+export class CreateAfpDto {
+  @IsNotEmpty()
+  @IsString()
+  sistemaAfp: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  porcentaje: number;
+}
+
+
+// ----- src/persona/relaciones/afp/dto/update-afp.dto.ts -----
+
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateAfpDto } from './create-afp.dto';
+
+export class UpdateAfpDto extends PartialType(CreateAfpDto) {}
+
+
+// ----- src/persona/relaciones/afp/entities/afp.entity.ts -----
+
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Persona } from '../../../entities/persona.entity';
+
+@Entity()
+export class Afp {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  sistemaAfp: string;
+
+  @Column('decimal', { precision: 10, scale: 2 }) // Tipo decimal con precisión y escala
+  porcentaje: number;
+
+  @OneToMany(() => Persona, (persona) => persona.afp)
+  personas: Persona[];
+}
+
+
+// ----- src/persona/relaciones/afp/afp.module.ts -----
+
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Afp } from './entities/afp.entity';
+import { AfpService } from './afp.service';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([Afp])],
+  providers: [AfpService],
+  exports: [AfpService],
+})
+export class AfpModule {}
+
+
+// ----- src/persona/relaciones/afp/afp.service.ts -----
+
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Afp } from './entities/afp.entity';
+import { CreateAfpDto } from './dto/create-afp.dto';
+
+@Injectable()
+export class AfpService {
+  constructor(
+    @InjectRepository(Afp)
+    private afpRepository: Repository<Afp>,
+  ) {}
+
+  async create(createNacionalidadDto: CreateAfpDto): Promise<Afp> {
+    const afp = this.afpRepository.create(createNacionalidadDto);
+    return await this.afpRepository.save(afp);
+  }
+
+  async findAll(): Promise<Afp[]> {
+    return await this.afpRepository.find();
+  }
+
+  // Otros métodos según sea necesario
+}
+
+
+// ----- src/persona/relaciones/salud/dto/create-salud.dto.ts -----
+
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+
+export class CreateSaludDto {
+  @IsNotEmpty()
+  @IsString()
+  previsionSalud: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  porcentaje: number;
+}
+
+
+// ----- src/persona/relaciones/salud/dto/update-salud.dto.ts -----
+
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateSaludDto } from './create-salud.dto';
+
+export class UpdateSaludDto extends PartialType(CreateSaludDto) {}
+
+
+// ----- src/persona/relaciones/salud/entities/salud.entity.ts -----
+
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Persona } from '../../../entities/persona.entity';
+
+@Entity()
+export class Salud {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  previsionSalud: string;
+
+  @Column('decimal', { precision: 10, scale: 2 }) // Tipo decimal con precisión y escala
+  porcentaje: number;
+
+  @OneToMany(() => Persona, (persona) => persona.salud)
+  personas: Persona[];
+}
+
+
+// ----- src/persona/relaciones/salud/salud.module.ts -----
+
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Salud } from './entities/salud.entity';
+import { SaludService } from './salud.service';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([Salud])],
+  providers: [SaludService],
+  exports: [SaludService],
+})
+export class SaludModule {}
+
+
+// ----- src/persona/relaciones/salud/salud.service.ts -----
+
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Salud } from './entities/salud.entity';
+import { CreateSaludDto } from './dto/create-salud.dto';
+
+@Injectable()
+export class SaludService {
+  constructor(
+    @InjectRepository(Salud)
+    private afpRepository: Repository<Salud>,
+  ) {}
+
+  async create(createNacionalidadDto: CreateSaludDto): Promise<Salud> {
+    const afp = this.afpRepository.create(createNacionalidadDto);
+    return await this.afpRepository.save(afp);
+  }
+
+  async findAll(): Promise<Salud[]> {
+    return await this.afpRepository.find();
+  }
+
+  // Otros métodos según sea necesario
+}
+
+
+// ----- src/persona/relaciones/region/dto/create-region.dto.ts -----
+
+import { IsNotEmpty, IsString } from 'class-validator';
+
+export class CreateRegionDto {
+  @IsNotEmpty()
+  @IsString()
+  nombre: string;
+}
+
+
+// ----- src/persona/relaciones/region/dto/update-region.dto.ts -----
+
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateRegionDto } from './create-region.dto';
+
+export class UpdateRegionDto extends PartialType(CreateRegionDto) {}
+
+
+// ----- src/persona/relaciones/region/entities/region.entity.ts -----
+
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Ciudad } from '../../ciudad/entities/ciudad.entity';
+
+@Entity()
+export class Region {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  nombre: string;
+
+  @OneToMany(() => Ciudad, (ciudad) => ciudad.regionId)
+  ciudades: Ciudad[];
+  // Una región puede tener varias ciudades (uno a muchos).
+}
+
+
+// ----- src/persona/relaciones/region/region.module.ts -----
+
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Region } from './entities/region.entity';
+import { RegionService } from './region.service';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([Region])],
+  providers: [RegionService],
+  exports: [RegionService],
+})
+export class RegionModule {}
+
+
+// ----- src/persona/relaciones/region/region.service.ts -----
+
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Region } from './entities/region.entity';
+import { CreateRegionDto } from './dto/create-region.dto';
+
+@Injectable()
+export class RegionService {
+  constructor(
+    @InjectRepository(Region)
+    private afpRepository: Repository<Region>,
+  ) {}
+
+  async create(createNacionalidadDto: CreateRegionDto): Promise<Region> {
+    const afp = this.afpRepository.create(createNacionalidadDto);
+    return await this.afpRepository.save(afp);
+  }
+
+  async findAll(): Promise<Region[]> {
+    return await this.afpRepository.find();
+  }
+
+  // Otros métodos según sea necesario
+}
+
+
+// ----- src/persona/relaciones/ciudad/dto/create-ciudad.dto.ts -----
+
+import { IsNotEmpty, IsString } from 'class-validator';
+import { ManyToOne } from 'typeorm';
+import { Region } from '../../region/entities/region.entity';
+
+export class CreateCiudadDto {
+  @IsNotEmpty()
+  @IsString()
+  nombre: string;
+
+  @ManyToOne(() => Region, (region) => region.ciudades)
+  region: Region;
+}
+
+
+// ----- src/persona/relaciones/ciudad/dto/update-ciudad.dto.ts -----
+
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateCiudadDto } from './create-ciudad.dto';
+
+export class UpdateCiudadDto extends PartialType(CreateCiudadDto) {}
+
+
+// ----- src/persona/relaciones/ciudad/entities/ciudad.entity.ts -----
+
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Region } from '../../region/entities/region.entity';
+import { Direccion } from '../../direccion/entities/direccion.entity';
+
+@Entity()
+export class Ciudad {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  nombre: string;
+
+  @ManyToOne(() => Region, (region) => region.ciudades)
+  regionId: number;
+  // Una ciudad pertenece a una región (muchos a uno).
+
+  @OneToMany(() => Direccion, (direcion) => direcion.ciudad)
+  direciones: Direccion[];
+  // Una ciudad puede tener varias direcciones (uno a muchos).
+}
+
+
+// ----- src/persona/relaciones/ciudad/ciudad.module.ts -----
+
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Ciudad } from './entities/Ciudad.entity';
+import { CiudadService } from './ciudad.service';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([Ciudad])],
+  providers: [CiudadService],
+  exports: [CiudadService],
+})
+export class CiudadModule {}
+
+
+// ----- src/persona/relaciones/ciudad/ciudad.service.ts -----
+
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Ciudad } from './entities/ciudad.entity';
+import { CreateCiudadDto } from './dto/create-ciudad.dto';
+
+@Injectable()
+export class CiudadService {
+  constructor(
+    @InjectRepository(Ciudad)
+    private afpRepository: Repository<Ciudad>,
+  ) {}
+
+  async create(createNacionalidadDto: CreateCiudadDto): Promise<Ciudad> {
+    const afp = this.afpRepository.create(createNacionalidadDto);
+    return await this.afpRepository.save(afp);
+  }
+
+  async findAll(): Promise<Ciudad[]> {
+    return await this.afpRepository.find();
+  }
+
+  // Otros métodos según sea necesario
+}
+
+
+// ----- src/persona/relaciones/direccion/dto/create-direccion.dto.ts -----
+
+import { IsNotEmpty, IsString } from 'class-validator';
+
+export class CreateDireccionDto {
+  @IsNotEmpty()
+  @IsString()
+  descripcionDireccion: string;
+}
+
+
+// ----- src/persona/relaciones/direccion/dto/update-direccion.dto.ts -----
+
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateDireccionDto } from './create-direccion.dto';
+
+export class UpdateDireccionDto extends PartialType(CreateDireccionDto) {}
+
+
+// ----- src/persona/relaciones/direccion/entities/direccion.entity.ts -----
+
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Ciudad } from '../../ciudad/entities/ciudad.entity';
+import { Persona } from 'src/persona/entities/persona.entity';
+
+@Entity()
+export class Direccion {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  descripcionDireccion: string;
+
+  @ManyToOne(() => Ciudad, (ciudad) => ciudad.direciones)
+  ciudad: Ciudad;
+
+  @OneToOne(() => Persona, (persona) => persona.direccion)
+  persona: Persona;
+}
+
+
+// ----- src/persona/relaciones/direccion/direccion.module.ts -----
+
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Direccion } from './entities/direccion.entity';
+import { DireccionService } from './direccion.service';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([Direccion])],
+  providers: [DireccionService],
+  exports: [DireccionService],
+})
+export class DireccionModule {}
+
+
+// ----- src/persona/relaciones/direccion/direccion.service.ts -----
+
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Direccion } from './entities/direccion.entity';
+import { CreateDireccionDto } from './dto/create-direccion.dto';
+
+@Injectable()
+export class DireccionService {
+  constructor(
+    @InjectRepository(Direccion)
+    private afpRepository: Repository<Direccion>,
+  ) {}
+
+  async create(createNacionalidadDto: CreateDireccionDto): Promise<Direccion> {
+    const afp = this.afpRepository.create(createNacionalidadDto);
+    return await this.afpRepository.save(afp);
+  }
+
+  async findAll(): Promise<Direccion[]> {
+    return await this.afpRepository.find();
+  }
+
+  // Otros métodos según sea necesario
+}
+
+
+// ----- src/app.controller.ts -----
+
+import { Controller, Get } from '@nestjs/common';
+import { AppService } from './app.service';
+
+@Controller()
+export class AppController {
+  constructor(private readonly appService: AppService) {}
+
+  @Get()
+  getHello(): string {
+    return this.appService.getHello();
+  }
+}
+
+
+// ----- src/app.module.ts -----
+
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { DatabaseModule } from './database/database.module';
+import { PersonaModule } from './persona/persona.module';
+import { NacionalidadModule } from './persona/relaciones/nacionalidad/nacionalidad.module';
+import { AfpModule } from './persona/relaciones/afp/afp.module';
+import { SaludModule } from './persona/relaciones/salud/salud.module';
+import { RegionModule } from './persona/relaciones/region/region.module';
+import { CiudadModule } from './persona/relaciones/ciudad/ciudad.module';
+import { DireccionModule } from './persona/relaciones/direccion/direccion.module';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    DatabaseModule,
+    PersonaModule,
+    NacionalidadModule,
+    AfpModule,
+    SaludModule,
+    RegionModule,
+    CiudadModule,
+    DireccionModule,
+  ],
+})
+export class AppModule {}
+
+
+// ----- src/app.service.ts -----
+
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
+export class AppService {
+  getHello(): string {
+    return 'Hello World!';
+  }
+}
+
+
+// ----- src/main.ts -----
+
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  app.useGlobalPipes(new ValidationPipe());
+  await app.listen(3000);
+}
+bootstrap();
+
+
+// ----- .env -----
+
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_USER=user
+DATABASE_PASSWORD=password
+DATABASE_NAME=persona_db
+TZ=America/Santiago
+
+// ----- package.json -----
+
+{
+  "name": "persona-backend",
+  "version": "0.0.1",
+  "description": "",
+  "author": "",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "nest build",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/main",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "seed:db": "ts-node scripts/seed-db.ts"
+  },
+  "dependencies": {
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/config": "^3.2.3",
+    "@nestjs/core": "^10.4.1",
+    "@nestjs/mapped-types": "^2.0.5",
+    "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/typeorm": "^10.0.2",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "dotenv": "^16.4.5",
+    "pg": "^8.12.0",
+    "reflect-metadata": "^0.2.0",
+    "rxjs": "^7.8.1",
+    "typeorm": "^0.3.20"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^10.0.0",
+    "@nestjs/schematics": "^10.0.0",
+    "@nestjs/testing": "^10.4.1",
+    "@types/express": "^4.17.17",
+    "@types/jest": "^29.5.2",
+    "@types/node": "^20.3.1",
+    "@types/supertest": "^6.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^8.42.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "jest": "^29.5.0",
+    "prettier": "^3.0.0",
+    "source-map-support": "^0.5.21",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.1.0",
+    "ts-loader": "^9.4.3",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.1.3"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "collectCoverageFrom": [
+      "**/*.(t|j)s"
+    ],
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node"
+  }
+}
+
+
+// ----- docker-compose.yml -----
+
+version: '3.8'
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: persona_db
+      TZ: America/Santiago
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+
+// ----- tsconfig.json -----
+
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2021",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": false,
+    "esModuleInterop": true,
+    "typeRoots": ["./node_modules/@types", "./src/types.d.ts"]
+  }
+}
+
